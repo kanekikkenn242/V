@@ -1,1 +1,48 @@
+name: build-ipa
+on:
+  push: { branches: [ main ] }
+  workflow_dispatch:
 
+jobs:
+  build:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: List Schemes
+        run: |
+          echo "=== Duke listuar skemat e disponueshme ==="
+          xcodebuild -list -project ThreeOneOSFive.xcodeproj
+          
+      - name: Build Xcode Project
+        run: |
+          # Përdorim skemën 3105 (jo ThreeOneOSFive)
+          echo "=== Duke ndertuar me skemen 3105 ==="
+          xcodebuild -project ThreeOneOSFive.xcodeproj -scheme 3105 -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
+            
+      - name: Package IPA
+        run: |
+          # Gjejme aplikacionin e ndertuar (do te quhet 3105.app)
+          APP_PATH=$(find build/Build/Products/Release-iphoneos -name "*.app" | head -n 1)
+          
+          if [ -z "$APP_PATH" ]; then
+            echo "[-] GABIM: Nuk u gjet aplikacioni .app"
+            exit 1
+          fi
+          
+          echo "Gjetur: $APP_PATH"
+          
+          # Krijojme strukturen per IPA
+          rm -rf pkg && mkdir -p pkg/Payload
+          cp -R "$APP_PATH" pkg/Payload/
+          
+          # Paketojme ne IPA
+          (cd pkg && zip -ry ../V-unsigned.ipa Payload)
+          
+      - uses: actions/upload-artifact@v4
+        with:
+          name: V-ipa
+          path: V-unsigned.ipa
