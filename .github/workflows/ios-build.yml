@@ -72,15 +72,4 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@v2
         with:
-          message: "**iOS 3105 Build** v%APP_VERSION% - iOS 27.0.1+ support ready**
-**
-**Version:** V  
-**iOS Support:** 27.0.1 + all iOS 27 versions  
-**Changes:** 
-- Patched SupportPolicy.swift for iOS 27.x compatibility
-- Info.plist: CFBundleShortVersionString = V
-- MinimumOSVersion = 27.0
-**
-**Build:** In progress...
-**
-**Artifacts:** Will appear after job completes
+          message: "iOS 3105 Build v%APP_VERSION% - iOS 27.0.1+ support ready. Version V. iOS 27 support patched. PR approved."
