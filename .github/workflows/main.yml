@@ -50,7 +50,7 @@ jobs:
       - name: Build App
         run: |
           xcodebuild \
-            -$WORKSPACE \
+            -project "$WORKSPACE" \
             -scheme $SCHEME \
             -configuration Release \
             -derivedDataPath ./build \
