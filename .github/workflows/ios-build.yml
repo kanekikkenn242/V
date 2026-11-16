@@ -46,27 +46,40 @@ jobs:
       - name: Build App
         run: |
           xcodebuild \
-            -$WORKSPACE \
-            -scheme $SCHEME \
+            -project "$WORKSPACE" \
+            -scheme "$SCHEME" \
             -configuration Release \
             -derivedDataPath ./build \
-            CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" \
-            PROVISIONING_PROFILE="$PROVISIONING_PROFILE_SPECIFIER" \
-            CODE_SIGNING_ALLOWED=YES
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Archive App
+        run: |
+          xcodebuild \
+            -project "$WORKSPACE" \
+            -scheme "$SCHEME" \
+            -configuration Release \
+            -archivePath "$PWD/build/${SCHEME}.xcarchive" \
+            -derivedDataPath ./build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            archive
 
       - name: Export IPA
         run: |
+          mkdir -p ./dist
           xcodebuild -exportArchive \
-            -archivePath build/Build/Products/Release-iphoneos/${SCHEME}.app.dsym \
-            -exportPath ./3105.ipa \
-            -exportOptionsPlist export_options.plist
+            -archivePath "$PWD/build/${SCHEME}.xcarchive" \
+            -exportPath "$PWD/dist" \
+            -exportOptionsPlist "$PWD/export_options.plist"
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: 3105-iOS27-${{ github.sha }}
-          path: ./3105.ipa
+          path: ./dist/*.ipa
           retention-days: 30
+          if-no-files-found: error
 
       - name: PR Comment
         if: github.event_name == 'pull_request'
