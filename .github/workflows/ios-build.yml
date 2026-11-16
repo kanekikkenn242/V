@@ -10,16 +10,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: List Schemes
+        run: |
+          echo "=== Duke listuar skemat e disponueshme ==="
+          xcodebuild -list -project ThreeOneOSFive.xcodeproj
+          
       - name: Build Xcode Project
         run: |
-          # Kompilojme projektin me skemen e saktë (ThreeOneOSFive)
-          xcodebuild -project ThreeOneOSFive.xcodeproj -scheme ThreeOneOSFive -configuration Release \
+          # Përdorim skemën 3105 (jo ThreeOneOSFive)
+          echo "=== Duke ndertuar me skemen 3105 ==="
+          xcodebuild -project ThreeOneOSFive.xcodeproj -scheme 3105 -configuration Release \
             -sdk iphoneos -destination 'generic/platform=iOS' \
             -derivedDataPath build CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" build
             
       - name: Package IPA
         run: |
-          # Gjejme aplikacionin e ndertuar
+          # Gjejme aplikacionin e ndertuar (do te quhet 3105.app)
           APP_PATH=$(find build/Build/Products/Release-iphoneos -name "*.app" | head -n 1)
           
           if [ -z "$APP_PATH" ]; then
