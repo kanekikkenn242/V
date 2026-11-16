@@ -22,11 +22,25 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: "20.x"
+
+      - name: Validate Code Signing
+        run: |
+          if [ -z "$CODE_SIGN_IDENTITY" ]; then
+            echo "❌ CODE_SIGN_IDENTITY not set"
+            exit 1
+          fi
+          if [ -z "$PROVISIONING_PROFILE_SPECIFIER" ]; then
+            echo "❌ PROVISIONING_PROFILE_SPECIFIER not set"
+            exit 1
+          fi
+          echo "✅ Code signing valid"
 
       - name: Display branch info
         run: |
@@ -56,7 +70,8 @@ jobs:
             -derivedDataPath ./build \
             CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" \
             PROVISIONING_PROFILE="$PROVISIONING_PROFILE_SPECIFIER" \
-            CODE_SIGNING_ALLOWED=YES
+            CODE_SIGNING_ALLOWED=YES \
+            -allowProvisioningUpdates
 
       - name: Export IPA
         run: |
