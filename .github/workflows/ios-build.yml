@@ -16,7 +16,7 @@ jobs:
       APP_NAME: "X"
       BUNDLE_ID: "com.apple.mobile.MobileHouseArrest"
       WORKSPACE: "ThreeOneOSFive.xcodeproj"
-      SCHEME: "ThreeOneOSFive"
+      SCHEME: "YOUR_SCHEME_NAME_HERE"
       MIN_IOS_VERSION: "27.0"
 
     steps:
