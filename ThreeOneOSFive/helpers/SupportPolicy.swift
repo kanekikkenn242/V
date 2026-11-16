@@ -44,7 +44,12 @@ enum ExploitSupportPolicy {
             return minor < 6 || (minor == 6 && patch <= 1)
         }
 
-        guard major == 27, minor == 0, patch == 0 else { return false }
-        return iOS27BetaNumber(for: build) != nil
+        guard major == 27 else { return false }
+        // Accept verified beta builds OR any iOS 27 build (24A/24B prefix)
+        if iOS27BetaNumber(for: build) != nil {
+            return true
+        }
+        // Accept any iOS 27 build string for broader compatibility
+        return build.hasPrefix("24A") || build.hasPrefix("24B")
     }
 }
