@@ -1,0 +1,86 @@
+name: iOS 3105 Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    timeout-minutes: 90
+
+    env:
+      APP_NAME: "X"
+      BUNDLE_ID: "com.apple.mobile.MobileHouseArrest"
+      WORKSPACE: "ThreeOneOSFive.xcodeproj"
+      SCHEME: "ThreeOneOSFive"
+      MIN_IOS_VERSION: "27.0"
+
+    steps:
+      - name: 🛠️ Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📋 Display branch info
+        run: echo "Building branch: ${{ github.ref_name }}"
+
+      - name: 🍎 Install Xcode
+        run: |
+          softwareupdate --install-rosetta --agree-to-license 2>/dev/null || true
+          xcode-select -switch /Applications/Xcode.app 2>/dev/null || true
+          sudo xcodebuild -license accept 2>/dev/null || true
+
+      - name: 🔧 Setup Xcode
+        run: |
+          xcodebuild -version
+          xcode-select -print-path
+
+      - name: 📂 Update Info.plist version
+        run: |
+          plutil -replace CFBundleShortVersionString -string "V" ThreeOneOSFive/Info.plist
+          plutil -replace MinimumOSVersion -string "27.0" ThreeOneOSFive/Info.plist
+
+      - name: 🏗️ Build App
+        run: |
+          xcodebuild \
+            -$WORKSPACE \
+            -scheme $SCHEME \
+            -configuration Release \
+            -derivedDataPath ./build \
+            CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" \
+            PROVISIONING_PROFILE="$PROVISIONING_PROFILE_SPECIFIER" \
+            CODE_SIGNING_ALLOWED=YES
+
+      - name: 📱 Export IPA
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/Build/Products/Release-iphoneos/${SCHEME}.app.dsym \
+            -exportPath ./3105.ipa \
+            -exportOptionsPlist export_options.plist
+
+      - name: ✅ Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3105-iOS27-${{ github.sha }}
+          path: ./3105.ipa
+          retention-days: 30
+
+      - name: 📝 Comment on PR
+        if: github.event_name == 'pull_request'
+        uses: thollander/actions-comment-pull-request@v2
+        with: |
+          ### iOS 3105 Build 🏗️
+          
+          **Version:** V  
+          **iOS Support:** 27.0.1 + all iOS 27 versions  
+          **Changes:** 
+          - Patched SupportPolicy.swift for iOS 27.x compatibility
+          - Info.plist: CFBundleShortVersionString = V
+          - MinimumOSVersion = 27.0
+          
+          **Build:** [View Run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          **Artifacts:** Download above for testing
