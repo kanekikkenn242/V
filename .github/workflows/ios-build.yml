@@ -26,7 +26,8 @@ jobs:
           fetch-depth: 0
 
       - name: Display branch info
-        run: echo "Building branch: ${{ github.ref_name }}"
+        run: |
+          echo "Building branch: ${{ github.ref_name }}"
 
       - name: Install Xcode
         run: |
