@@ -30,17 +30,17 @@ jobs:
         with:
           node-version: "20.x"
 
-      - name: Validate Code Signing
+      - name: Validate Prerequisites
         run: |
           if [ -z "$CODE_SIGN_IDENTITY" ]; then
-            echo "❌ CODE_SIGN_IDENTITY not set"
+            echo "❌ CODE_SIGN_IDENTITY not set - add it as GitHub secret"
             exit 1
           fi
           if [ -z "$PROVISIONING_PROFILE_SPECIFIER" ]; then
-            echo "❌ PROVISIONING_PROFILE_SPECIFIER not set"
+            echo "❌ PROVISIONING_PROFILE_SPECIFIER not set - add it as GitHub secret"
             exit 1
           fi
-          echo "✅ Code signing valid"
+          echo "✅ Code signing variables present"
 
       - name: Display branch info
         run: |
