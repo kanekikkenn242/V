@@ -22,8 +22,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
         with:
-          fetch-depth: 0
+          node-version: "20.x"
 
       - name: Display branch info
         run: |
@@ -47,40 +50,27 @@ jobs:
       - name: Build App
         run: |
           xcodebuild \
-            -project "$WORKSPACE" \
-            -scheme "$SCHEME" \
+            -$WORKSPACE \
+            -scheme $SCHEME \
             -configuration Release \
             -derivedDataPath ./build \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO
-
-      - name: Archive App
-        run: |
-          xcodebuild \
-            -project "$WORKSPACE" \
-            -scheme "$SCHEME" \
-            -configuration Release \
-            -archivePath "$PWD/build/${SCHEME}.xcarchive" \
-            -derivedDataPath ./build \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            archive
+            CODE_SIGN_IDENTITY="$CODE_SIGN_IDENTITY" \
+            PROVISIONING_PROFILE="$PROVISIONING_PROFILE_SPECIFIER" \
+            CODE_SIGNING_ALLOWED=YES
 
       - name: Export IPA
         run: |
-          mkdir -p ./dist
           xcodebuild -exportArchive \
-            -archivePath "$PWD/build/${SCHEME}.xcarchive" \
-            -exportPath "$PWD/dist" \
-            -exportOptionsPlist "$PWD/export_options.plist"
+            -archivePath build/Build/Products/Release-iphoneos/${SCHEME}.app.dsym \
+            -exportPath ./3105.ipa \
+            -exportOptionsPlist export_options.plist
 
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: 3105-iOS27-${{ github.sha }}
-          path: ./dist/*.ipa
+          path: ./3105.ipa
           retention-days: 30
-          if-no-files-found: error
 
       - name: PR Comment
         if: github.event_name == 'pull_request'
